@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
   const [searchClass, setSearchClass] = useState('');
   const [searchBrand, setSearchBrand] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const news = [
     {
@@ -64,9 +66,55 @@ const Index = () => {
                 Личный кабинет
               </Link>
             </nav>
-            <Button asChild className="md:hidden">
-              <Link to="/login">Войти</Link>
-            </Button>
+            
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Icon name="Menu" size={24} />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <SheetHeader>
+                  <SheetTitle className="text-left" style={{ fontFamily: 'serif', fontStyle: 'italic' }}>
+                    Индекс Драйв
+                  </SheetTitle>
+                </SheetHeader>
+                <nav className="flex flex-col gap-4 mt-8">
+                  <Link 
+                    to="/branches" 
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon name="MapPin" size={20} />
+                    <span className="font-medium">Филиалы</span>
+                  </Link>
+                  <Link 
+                    to="/cars" 
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon name="Car" size={20} />
+                    <span className="font-medium">Бронирование</span>
+                  </Link>
+                  <Link 
+                    to="/login" 
+                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-secondary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Icon name="User" size={20} />
+                    <span className="font-medium">Личный кабинет</span>
+                  </Link>
+                  <div className="border-t pt-4 mt-4">
+                    <Button asChild className="w-full">
+                      <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                        <Icon name="UserPlus" size={18} className="mr-2" />
+                        Регистрация
+                      </Link>
+                    </Button>
+                  </div>
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
