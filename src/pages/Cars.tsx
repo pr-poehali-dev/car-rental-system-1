@@ -15,12 +15,12 @@ interface Car {
   transmission: string;
   price: number;
   image: string;
-  carClass: string;
 }
 
 const Cars = () => {
-  const [selectedClass, setSelectedClass] = useState<string>('all');
   const [selectedBrand, setSelectedBrand] = useState<string>('all');
+  const [selectedModel, setSelectedModel] = useState<string>('all');
+  const [selectedColor, setSelectedColor] = useState<string>('all');
 
   const cars: Car[] = [
     {
@@ -32,7 +32,6 @@ const Cars = () => {
       transmission: 'АКП',
       price: 5000,
       image: 'https://images.unsplash.com/photo-1617531653332-bd46c24f2068?w=400',
-      carClass: 'премиум',
     },
     {
       id: 'CAR2',
@@ -43,7 +42,6 @@ const Cars = () => {
       transmission: 'АКП',
       price: 4500,
       image: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=400',
-      carClass: 'премиум',
     },
     {
       id: 'CAR3',
@@ -54,7 +52,6 @@ const Cars = () => {
       transmission: 'АКП',
       price: 3800,
       image: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=400',
-      carClass: 'эконом',
     },
     {
       id: 'CAR4',
@@ -65,7 +62,6 @@ const Cars = () => {
       transmission: 'МКП',
       price: 2500,
       image: 'https://images.unsplash.com/photo-1617654112368-307921291f42?w=400',
-      carClass: 'эконом',
     },
     {
       id: 'CAR5',
@@ -76,7 +72,6 @@ const Cars = () => {
       transmission: 'АКП',
       price: 3500,
       image: 'https://images.unsplash.com/photo-1622115458be-5c3ffa7c9ce1?w=400',
-      carClass: 'эконом',
     },
     {
       id: 'CAR6',
@@ -87,17 +82,19 @@ const Cars = () => {
       transmission: 'АКП',
       price: 4800,
       image: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=400',
-      carClass: 'премиум',
     },
   ];
 
   const filteredCars = cars.filter((car) => {
-    const classMatch = selectedClass === 'all' || car.carClass === selectedClass;
     const brandMatch = selectedBrand === 'all' || car.brand === selectedBrand;
-    return classMatch && brandMatch;
+    const modelMatch = selectedModel === 'all' || car.model === selectedModel;
+    const colorMatch = selectedColor === 'all' || car.color === selectedColor;
+    return brandMatch && modelMatch && colorMatch;
   });
 
   const brands = Array.from(new Set(cars.map((car) => car.brand)));
+  const models = Array.from(new Set(cars.map((car) => car.model)));
+  const colors = Array.from(new Set(cars.map((car) => car.color)));
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
@@ -120,20 +117,7 @@ const Cars = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Класс автомобиля</label>
-                <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все классы</SelectItem>
-                    <SelectItem value="эконом">Эконом</SelectItem>
-                    <SelectItem value="премиум">Премиум</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Марка</label>
                 <Select value={selectedBrand} onValueChange={setSelectedBrand}>
@@ -150,13 +134,46 @@ const Cars = () => {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Модель</label>
+                <Select value={selectedModel} onValueChange={setSelectedModel}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все модели</SelectItem>
+                    {models.map((model) => (
+                      <SelectItem key={model} value={model}>
+                        {model}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Цвет</label>
+                <Select value={selectedColor} onValueChange={setSelectedColor}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все цвета</SelectItem>
+                    {colors.map((color) => (
+                      <SelectItem key={color} value={color}>
+                        {color}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="flex items-end">
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={() => {
-                    setSelectedClass('all');
                     setSelectedBrand('all');
+                    setSelectedModel('all');
+                    setSelectedColor('all');
                   }}
                 >
                   <Icon name="X" size={18} className="mr-2" />
@@ -176,9 +193,6 @@ const Cars = () => {
                   alt={`${car.brand} ${car.model}`}
                   className="w-full h-full object-cover"
                 />
-                <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">
-                  {car.carClass}
-                </Badge>
               </div>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
