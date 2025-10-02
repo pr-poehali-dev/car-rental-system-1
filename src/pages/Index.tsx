@@ -43,12 +43,12 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img
-                src="/img/622b9b5e-1445-406f-9173-c8176b9d781e.jpg"
-                alt="Car Sharing Logo"
-                className="h-12 w-12 rounded-lg"
+                src="https://cdn.poehali.dev/files/8e185479-5717-4245-be83-11e746c8a03b.png"
+                alt="Индекс Драйв"
+                className="h-16 w-auto"
               />
               <div>
-                <h1 className="text-2xl font-bold text-primary">CAR SHARING</h1>
+                <h1 className="text-2xl font-bold text-primary" style={{ fontFamily: 'serif', fontStyle: 'italic' }}>Индекс Драйв</h1>
                 <p className="text-xs text-muted-foreground">Ваш надежный выбор</p>
               </div>
             </div>
@@ -71,7 +71,7 @@ const Index = () => {
         </div>
       </header>
 
-      <section className="bg-gradient-to-r from-primary to-accent text-white py-20">
+      <section className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center space-y-6 animate-fade-in">
             <h2 className="text-4xl md:text-5xl font-bold">Доверьтесь профессионалам</h2>
@@ -96,9 +96,9 @@ const Index = () => {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <Card className="max-w-4xl mx-auto animate-slide-up shadow-lg">
+          <Card className="max-w-4xl mx-auto animate-slide-up shadow-lg border-2">
             <CardHeader>
               <CardTitle className="text-2xl flex items-center gap-2">
                 <Icon name="Search" size={28} />
@@ -185,11 +185,11 @@ const Index = () => {
         </div>
       </section>
 
-      <footer className="bg-primary text-white py-12">
+      <footer className="bg-gray-900 text-white py-12">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">CAR SHARING</h3>
+              <h3 className="text-xl font-bold mb-4" style={{ fontFamily: 'serif', fontStyle: 'italic' }}>Индекс Драйв</h3>
               <p className="opacity-90">Надежный сервис аренды автомобилей</p>
             </div>
             <div>
@@ -218,7 +218,7 @@ const Index = () => {
             </div>
           </div>
           <div className="border-t border-white/20 mt-8 pt-8 text-center opacity-90">
-            <p>&copy; 2024 Car Sharing. Все права защищены.</p>
+            <p>&copy; 2024 Индекс Драйв. Все права защищены.</p>
           </div>
         </div>
       </footer>
