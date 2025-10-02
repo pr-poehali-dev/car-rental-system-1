@@ -12,21 +12,27 @@ const Index = () => {
   const news = [
     {
       id: 1,
-      title: 'Новая программа лояльности',
-      description: 'Получайте бонусы за каждую поездку и обменивайте их на скидки!',
-      image: 'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=400',
+      title: 'В России вынесли первый приговор за продажу аккаунтов каршеринга',
+      description: 'В конце 2020 года в России вынесли первый приговор за продажу аккаунтов каршеринга. Приморский районный суд Петербурга оштрафовал гражданина РФ Романа Амелина на 50 тыс. рублей.',
+      image: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400',
     },
     {
       id: 2,
-      title: 'Расширение автопарка',
-      description: 'В наш парк добавлены новые премиум-модели Mercedes и BMW.',
-      image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=400',
+      title: 'Программа поддержки каршеринга не заработала из-за российского телематического оборудования',
+      description: '25 августа 2020 года стало известно о том, что программа поддержки каршеринга, которая была анонсирована ещё в апреле на совещании у президента РФ Владимира Путина, так и не заработала.',
+      image: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400',
     },
     {
       id: 3,
-      title: 'Открытие нового филиала',
-      description: 'Теперь мы работаем в Западном районе города!',
-      image: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400',
+      title: 'Мошенничество с данными клиентов',
+      description: 'По сообщениям на июль 2020 г каршеринг становится отличным помощником для мошенников. С помощью селфи клиентов с паспортом на людей берут кредиты в микрофинансовых компаниях.',
+      image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400',
+    },
+    {
+      id: 4,
+      title: 'Столичный каршеринг обвинил Роспотребнадзор в блокировке деятельности',
+      description: 'Каршеринг не может возобновить работу по докоронавирусному сценарию из-за отсутствия предписаний Роспотребнадзора. Представители сервисов обвинили ведомство в блокировке их деятельности и 9 июня направили коллективное обращение.',
+      image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400',
     },
   ];
 
@@ -156,7 +162,7 @@ const Index = () => {
       <section className="py-16 bg-white/50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">Новости и акции</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {news.map((item) => (
               <Card key={item.id} className="animate-fade-in hover-scale overflow-hidden">
                 <img
@@ -165,8 +171,8 @@ const Index = () => {
                   className="w-full h-48 object-cover"
                 />
                 <CardHeader>
-                  <CardTitle className="text-lg">{item.title}</CardTitle>
-                  <CardDescription>{item.description}</CardDescription>
+                  <CardTitle className="text-base line-clamp-2">{item.title}</CardTitle>
+                  <CardDescription className="line-clamp-3 text-sm">{item.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button variant="outline" className="w-full">
@@ -194,20 +200,20 @@ const Index = () => {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Навигация</h4>
+              <h4 className="font-semibold mb-4">Полезные ссылки</h4>
               <nav className="space-y-2">
-                <Link to="/branches" className="block opacity-90 hover:opacity-100 transition-opacity">
-                  Филиалы
-                </Link>
-                <Link to="/cars" className="block opacity-90 hover:opacity-100 transition-opacity">
-                  Автомобили
-                </Link>
-                <Link to="/login" className="block opacity-90 hover:opacity-100 transition-opacity">
-                  Личный кабинет
-                </Link>
-                <Link to="/register" className="block opacity-90 hover:opacity-100 transition-opacity">
-                  Регистрация
-                </Link>
+                <a href="http://audi.ru/" target="_blank" rel="noopener noreferrer" className="block opacity-90 hover:opacity-100 transition-opacity">
+                  Audi - официальный сайт
+                </a>
+                <a href="http://bmw.ru/" target="_blank" rel="noopener noreferrer" className="block opacity-90 hover:opacity-100 transition-opacity">
+                  BMW - официальный сайт
+                </a>
+                <a href="http://mazda.ru/" target="_blank" rel="noopener noreferrer" className="block opacity-90 hover:opacity-100 transition-opacity">
+                  Mazda - официальный сайт
+                </a>
+                <a href="http://honda.ru/" target="_blank" rel="noopener noreferrer" className="block opacity-90 hover:opacity-100 transition-opacity">
+                  Honda - официальный сайт
+                </a>
               </nav>
             </div>
           </div>
