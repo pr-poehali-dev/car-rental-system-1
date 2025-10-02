@@ -1,256 +1,405 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import Icon from '@/components/ui/icon';
+import { useToast } from '@/hooks/use-toast';
+
+interface UserData {
+  lastName: string;
+  firstName: string;
+  middleName: string;
+  passportSeries: string;
+  passportNumber: string;
+  phone: string;
+  birthDate: string;
+}
+
+interface CarBooking {
+  id: string;
+  carId: string;
+  brand: string;
+  model: string;
+  plateNumber: string;
+  startDate: string;
+  endDate: string;
+  pricePerDay: number;
+  branch: string;
+}
 
 const Booking = () => {
-  const [bookingData, setBookingData] = useState({
-    carId: 'CAR123',
-    brand: 'Mercedes-Benz',
-    model: 'C-Class',
-    plateNumber: 'А001АА777',
-    startDate: '',
-    endDate: '',
-    pricePerDay: 5000,
-    branch: 'Центральный',
-  });
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [selectedCard, setSelectedCard] = useState('');
+  const [bookings, setBookings] = useState<CarBooking[]>([
+    {
+      id: '1',
+      carId: 'CAR001',
+      brand: 'Mercedes-Benz',
+      model: 'C-Class',
+      plateNumber: 'А123АА777',
+      startDate: new Date().toISOString().split('T')[0],
+      endDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+      pricePerDay: 5000,
+      branch: 'Филиал Центральный',
+    },
+  ]);
 
-  const [clientData, setClientData] = useState({
-    lastName: 'Иванов',
-    firstName: 'Иван',
-    middleName: 'Иванович',
-    phone: '+7 (900) 123-45-67',
-    passport: '1234 567890',
-    card: '4444',
-    birthDate: '1990-01-01',
-  });
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    if (!isLoggedIn) {
+      navigate('/login');
+      return;
+    }
+    const storedData = localStorage.getItem('userData');
+    if (storedData) {
+      setUserData(JSON.parse(storedData));
+    }
+  }, [navigate]);
+
+  const calculateDays = (start: string, end: string) => {
+    const diffTime = Math.abs(new Date(end).getTime() - new Date(start).getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays || 1;
+  };
 
   const calculateDiscount = (days: number) => {
-    const discountPeriods = Math.floor(days / 3);
-    return Math.min(discountPeriods * 5, 25);
+    const discountTiers = Math.floor(days / 3);
+    const discount = Math.min(discountTiers * 5, 25);
+    return discount;
   };
 
   const calculateTotal = () => {
-    if (!bookingData.startDate || !bookingData.endDate) return 0;
-    const start = new Date(bookingData.startDate);
-    const end = new Date(bookingData.endDate);
-    const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    if (days <= 0) return 0;
-    
-    const subtotal = days * bookingData.pricePerDay;
-    const discount = calculateDiscount(days);
-    return subtotal * (1 - discount / 100);
+    let total = 0;
+    bookings.forEach((booking) => {
+      const days = calculateDays(booking.startDate, booking.endDate);
+      const discount = calculateDiscount(days);
+      const subtotal = booking.pricePerDay * days;
+      const discountAmount = (subtotal * discount) / 100;
+      total += subtotal - discountAmount;
+    });
+    return total;
   };
 
-  const getDays = () => {
-    if (!bookingData.startDate || !bookingData.endDate) return 0;
-    const start = new Date(bookingData.startDate);
-    const end = new Date(bookingData.endDate);
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  const handleBookingChange = (id: string, field: string, value: string | number) => {
+    setBookings(
+      bookings.map((booking) =>
+        booking.id === id ? { ...booking, [field]: value } : booking
+      )
+    );
   };
+
+  const addCar = () => {
+    navigate('/cars');
+  };
+
+  const removeCar = (id: string) => {
+    if (bookings.length === 1) {
+      toast({
+        title: 'Ошибка',
+        description: 'Должна быть хотя бы одна машина в бронировании',
+        variant: 'destructive',
+      });
+      return;
+    }
+    setBookings(bookings.filter((b) => b.id !== id));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCard) {
+      toast({
+        title: 'Ошибка',
+        description: 'Выберите банковскую карту',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const bookingData = {
+      bookings,
+      total: calculateTotal(),
+      card: selectedCard,
+      date: new Date().toISOString(),
+    };
+    
+    const existingBookings = JSON.parse(localStorage.getItem('bookingHistory') || '[]');
+    localStorage.setItem('bookingHistory', JSON.stringify([...existingBookings, bookingData]));
+    
+    toast({
+      title: 'Успешно!',
+      description: 'Бронирование оформлено',
+    });
+    navigate('/history');
+  };
+
+  if (!userData) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Бронирование автомобиля</h1>
+          <h1 className="text-3xl font-bold">Оформление бронирования</h1>
           <Button variant="outline" asChild>
-            <Link to="/">
-              <Icon name="ArrowLeft" size={18} className="mr-2" />
-              Назад
+            <Link to="/account">
+              <Icon name="User" size={18} className="mr-2" />
+              Личный кабинет
             </Link>
           </Button>
         </div>
 
-        <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="Car" size={24} />
-                  Данные об автомобиле
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">ID автомобиля</p>
-                    <p className="font-medium">{bookingData.carId}</p>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="flex items-center gap-2">
+                      <Icon name="Car" size={24} />
+                      Данные об автомобилях
+                    </CardTitle>
+                    <Button type="button" onClick={addCar} size="sm">
+                      <Icon name="Plus" size={16} className="mr-2" />
+                      Добавить авто
+                    </Button>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Номер</p>
-                    <p className="font-medium">{bookingData.plateNumber}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Марка</p>
-                    <p className="font-medium">{bookingData.brand}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Модель</p>
-                    <p className="font-medium">{bookingData.model}</p>
-                  </div>
-                </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {bookings.map((booking, index) => {
+                    const days = calculateDays(booking.startDate, booking.endDate);
+                    const discount = calculateDiscount(days);
+                    const subtotal = booking.pricePerDay * days;
+                    const discountAmount = (subtotal * discount) / 100;
+                    const total = subtotal - discountAmount;
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Дата бронирования</Label>
-                    <Input
-                      id="startDate"
-                      type="date"
-                      value={bookingData.startDate}
-                      onChange={(e) =>
-                        setBookingData({ ...bookingData, startDate: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="endDate">Дата возврата</Label>
-                    <Input
-                      id="endDate"
-                      type="date"
-                      value={bookingData.endDate}
-                      onChange={(e) =>
-                        setBookingData({ ...bookingData, endDate: e.target.value })
-                      }
-                    />
-                  </div>
-                </div>
+                    return (
+                      <div key={booking.id}>
+                        {index > 0 && <Separator className="my-6" />}
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-semibold text-lg">Автомобиль #{index + 1}</h3>
+                            {bookings.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCar(booking.id)}
+                              >
+                                <Icon name="Trash2" size={16} className="mr-2" />
+                                Удалить
+                              </Button>
+                            )}
+                          </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Стоимость за день</p>
-                    <p className="text-xl font-bold text-primary">
-                      {bookingData.pricePerDay.toLocaleString()} ₽
-                    </p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm text-muted-foreground">ID машины</Label>
+                              <p className="font-medium">{booking.carId}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Номер машины</Label>
+                              <p className="font-medium">{booking.plateNumber}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Марка</Label>
+                              <p className="font-medium">{booking.brand}</p>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Модель</Label>
+                              <p className="font-medium">{booking.model}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Дата начала аренды</Label>
+                              <Input
+                                type="date"
+                                value={booking.startDate}
+                                onChange={(e) =>
+                                  handleBookingChange(booking.id, 'startDate', e.target.value)
+                                }
+                                required
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Дата возврата</Label>
+                              <Input
+                                type="date"
+                                value={booking.endDate}
+                                onChange={(e) =>
+                                  handleBookingChange(booking.id, 'endDate', e.target.value)
+                                }
+                                min={booking.startDate}
+                                required
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Филиал</Label>
+                              <Select
+                                value={booking.branch}
+                                onValueChange={(value) =>
+                                  handleBookingChange(booking.id, 'branch', value)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Филиал Центральный">Филиал Центральный</SelectItem>
+                                  <SelectItem value="Филиал Северный">Филиал Северный</SelectItem>
+                                  <SelectItem value="Филиал Южный">Филиал Южный</SelectItem>
+                                  <SelectItem value="Филиал Восточный">Филиал Восточный</SelectItem>
+                                  <SelectItem value="Филиал Западный">Филиал Западный</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label className="text-sm text-muted-foreground">Стоимость за день</Label>
+                              <p className="font-medium text-xl">{booking.pricePerDay.toLocaleString()} ₽</p>
+                            </div>
+                          </div>
+
+                          <div className="bg-muted/50 p-4 rounded-lg space-y-2">
+                            <div className="flex justify-between text-sm">
+                              <span>Количество дней:</span>
+                              <span className="font-medium">{days}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span>Стоимость:</span>
+                              <span>{subtotal.toLocaleString()} ₽</span>
+                            </div>
+                            {discount > 0 && (
+                              <>
+                                <div className="flex justify-between text-sm text-green-600">
+                                  <span>Скидка ({discount}%):</span>
+                                  <span>-{discountAmount.toLocaleString()} ₽</span>
+                                </div>
+                                <Separator />
+                              </>
+                            )}
+                            <div className="flex justify-between font-semibold">
+                              <span>Итого:</span>
+                              <span>{total.toLocaleString()} ₽</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="User" size={24} />
+                    Данные клиента
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm text-muted-foreground">ФИО</Label>
+                      <p className="font-medium">
+                        {userData.lastName} {userData.firstName} {userData.middleName}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Телефон</Label>
+                      <p className="font-medium">{userData.phone}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Паспортные данные</Label>
+                      <p className="font-medium">
+                        {userData.passportSeries} {userData.passportNumber}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-sm text-muted-foreground">Дата рождения</Label>
+                      <p className="font-medium">{userData.birthDate}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Филиал</p>
-                    <Select defaultValue={bookingData.branch}>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="space-y-6">
+              <Card className="sticky top-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Icon name="CreditCard" size={24} />
+                    Оплата
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Банковская карта *</Label>
+                    <Select value={selectedCard} onValueChange={setSelectedCard}>
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue placeholder="Выберите карту" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Центральный">Центральный</SelectItem>
-                        <SelectItem value="Северный">Северный</SelectItem>
-                        <SelectItem value="Южный">Южный</SelectItem>
+                        <SelectItem value="1111">Visa •••• 1111</SelectItem>
+                        <SelectItem value="2222">MasterCard •••• 2222</SelectItem>
+                        <SelectItem value="3333">Мир •••• 3333</SelectItem>
                       </SelectContent>
                     </Select>
+                    <Button
+                      type="button"
+                      variant="link"
+                      className="p-0 h-auto text-sm"
+                      onClick={() => navigate('/cards')}
+                    >
+                      Управление картами
+                    </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
 
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="User" size={24} />
-                  Данные о клиенте
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Фамилия</p>
-                    <p className="font-medium">{clientData.lastName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Имя</p>
-                    <p className="font-medium">{clientData.firstName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Отчество</p>
-                    <p className="font-medium">{clientData.middleName}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Телефон</p>
-                    <p className="font-medium">{clientData.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Паспорт</p>
-                    <p className="font-medium">{clientData.passport}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Дата рождения</p>
-                    <p className="font-medium">{clientData.birthDate}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Карта</p>
-                    <p className="font-medium">**** {clientData.card}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                  <Separator />
 
-          <div className="space-y-6">
-            <Card className="animate-fade-in sticky top-4">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Icon name="Calculator" size={24} />
-                  Итого
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {getDays() > 0 && (
-                  <>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Количество дней</span>
-                        <span className="font-medium">{getDays()}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Цена за день</span>
-                        <span className="font-medium">{bookingData.pricePerDay} ₽</span>
-                      </div>
-                      {calculateDiscount(getDays()) > 0 && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Скидка</span>
-                          <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                            {calculateDiscount(getDays())}%
-                          </Badge>
-                        </div>
-                      )}
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span>Автомобилей:</span>
+                      <span className="font-medium">{bookings.length}</span>
                     </div>
-                    <div className="border-t pt-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-lg font-semibold">Итоговая стоимость</span>
-                        <span className="text-2xl font-bold text-primary">
-                          {calculateTotal().toLocaleString()} ₽
-                        </span>
-                      </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Всего дней:</span>
+                      <span className="font-medium">
+                        {bookings.reduce(
+                          (sum, b) => sum + calculateDays(b.startDate, b.endDate),
+                          0
+                        )}
+                      </span>
                     </div>
-                  </>
-                )}
+                    <Separator />
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Итого к оплате:</span>
+                      <span>{calculateTotal().toLocaleString()} ₽</span>
+                    </div>
+                  </div>
 
-                <div className="space-y-2 pt-4">
-                  <Button className="w-full" size="lg">
-                    <Icon name="Check" size={18} className="mr-2" />
+                  <div className="bg-blue-50 p-3 rounded-lg text-sm text-blue-900">
+                    <Icon name="Info" size={16} className="inline mr-2" />
+                    Скидка 5% за каждые 3 дня (макс. 25%)
+                  </div>
+
+                  <Button type="submit" className="w-full" size="lg">
                     Оформить бронирование
                   </Button>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link to="/cars">
-                      <Icon name="Car" size={18} className="mr-2" />
-                      Изменить автомобиль
-                    </Link>
-                  </Button>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link to="/cards">
-                      <Icon name="CreditCard" size={18} className="mr-2" />
-                      Выбрать карту
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

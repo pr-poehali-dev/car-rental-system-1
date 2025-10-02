@@ -57,7 +57,7 @@ const Account = () => {
   if (!userData) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Личный кабинет</h1>
@@ -143,7 +143,7 @@ const Account = () => {
             <Card className="animate-fade-in">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Icon name="CreditCard" size={24} />
+                  <Icon name="Settings" size={24} />
                   Действия
                 </CardTitle>
               </CardHeader>
@@ -172,7 +172,7 @@ const Account = () => {
                   className="w-full"
                 >
                   <Icon name="LogOut" size={18} className="mr-2" />
-                  Выйти
+                  Выйти из аккаунта
                 </Button>
               </CardContent>
             </Card>
